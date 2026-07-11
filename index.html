@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>实时语音翻译</title>
+    <meta name="theme-color" content="#0b7a75" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="实时翻译" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-label="实时语音翻译工作台">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Live Interpreter</p>
+            <h1>实时语音翻译</h1>
+          </div>
+          <div class="status-group">
+            <div class="status-pill" id="supportStatus">
+              <span class="status-dot"></span>
+              <span>正在检查</span>
+            </div>
+            <button class="icon-button compact" id="stopSpeakButton" type="button" aria-label="停止朗读" title="停止朗读">
+              <span data-icon="volume-x"></span>
+            </button>
+          </div>
+        </header>
+
+        <section class="mobile-panel" id="mobilePanel" hidden>
+          <div>
+            <strong>手机使用</strong>
+            <p id="mobileInfo">手机和电脑连接同一个 Wi-Fi 后，使用启动窗口里显示的手机地址打开。</p>
+          </div>
+          <div class="mobile-actions">
+            <button class="ghost-button" id="installButton" type="button" hidden>
+              <span data-icon="download"></span>
+              <span>添加到桌面</span>
+            </button>
+            <button class="ghost-button" id="copyMobileLinkButton" type="button">
+              <span data-icon="copy"></span>
+              <span>复制手机地址</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="control-strip" aria-label="翻译设置">
+          <label class="field">
+            <span>我说</span>
+            <select id="sourceLang">
+              <option value="zh-CN" selected>中文</option>
+              <option value="en-US">English</option>
+              <option value="ja-JP">日本語</option>
+              <option value="ko-KR">한국어</option>
+              <option value="fr-FR">Français</option>
+              <option value="de-DE">Deutsch</option>
+              <option value="es-ES">Español</option>
+            </select>
+          </label>
+
+          <button class="icon-button" id="swapButton" type="button" aria-label="交换语言" title="交换语言">
+            <span data-icon="arrow-left-right"></span>
+          </button>
+
+          <label class="field">
+            <span>翻译成</span>
+            <select id="targetLang">
+              <option value="en" selected>English</option>
+              <option value="zh-CN">中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
+            </select>
+          </label>
+
+          <div class="toggles" aria-label="开关">
+            <label class="field slim-field">
+              <span>引擎</span>
+              <select id="engineSelect">
+                <option value="auto" selected>AI 优先</option>
+                <option value="public">公开接口</option>
+              </select>
+            </label>
+            <label class="toggle">
+              <input id="autoToggle" type="checkbox" checked />
+              <span>自动翻译</span>
+            </label>
+            <label class="toggle">
+              <input id="speakToggle" type="checkbox" checked />
+              <span>朗读译文</span>
+            </label>
+            <label class="toggle">
+              <input id="speakerModeToggle" type="checkbox" />
+              <span>多人模式</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="speaker-strip" id="speakerStrip" aria-label="说话人设置" hidden>
+          <div class="speaker-tabs" id="speakerTabs">
+            <button class="speaker-tab active" type="button" data-speaker="A">A</button>
+            <button class="speaker-tab" type="button" data-speaker="B">B</button>
+            <button class="speaker-tab" type="button" data-speaker="C">C</button>
+            <button class="speaker-tab" type="button" data-speaker="D">D</button>
+          </div>
+          <button class="ghost-button" id="nextSpeakerButton" type="button">
+            <span data-icon="users"></span>
+            <span>换人</span>
+          </button>
+          <span class="speaker-note" id="speakerNote">当前说话人：A</span>
+        </section>
+
+        <section class="conversation" aria-live="polite">
+          <article class="panel source-panel">
+            <div class="panel-header">
+              <span>原文</span>
+              <div class="panel-actions">
+                <button class="ghost-button" id="translateNowButton" type="button">
+                  <span data-icon="languages"></span>
+                  <span>翻译</span>
+                </button>
+                <button class="ghost-button" id="clearButton" type="button">
+                  <span data-icon="trash-2"></span>
+                  <span>清空</span>
+                </button>
+              </div>
+            </div>
+            <textarea
+              class="transcript source-input"
+              id="sourceText"
+              spellcheck="false"
+              placeholder="点击麦克风开始说话，也可以直接输入文字。"
+            ></textarea>
+            <div class="speaker-log" id="speakerLog"></div>
+            <div class="partial-line" id="partialText"></div>
+          </article>
+
+          <article class="panel target-panel">
+            <div class="panel-header">
+              <span>译文</span>
+              <div class="panel-actions">
+                <button class="ghost-button" id="copyButton" type="button">
+                  <span data-icon="copy"></span>
+                  <span>复制</span>
+                </button>
+              </div>
+            </div>
+            <div class="transcript target-output" id="targetText">翻译会显示在这里。</div>
+          </article>
+        </section>
+
+        <section class="history-panel" aria-label="最近翻译">
+          <div class="history-head">
+            <span>最近片段</span>
+            <button class="ghost-button" id="clearHistoryButton" type="button">
+              <span data-icon="eraser"></span>
+              <span>清除记录</span>
+            </button>
+          </div>
+          <div class="history-list" id="historyList">
+            <p class="empty-history">完成的翻译会保存在这里，方便回看和复制。</p>
+          </div>
+        </section>
+
+        <footer class="bottom-bar">
+          <button class="mic-button" id="micButton" type="button">
+            <span class="mic-icon" aria-hidden="true"><span data-icon="mic"></span></span>
+            <span class="mic-label">开始实时翻译</span>
+          </button>
+          <button class="record-button" id="recordButton" type="button">
+            <span data-icon="circle"></span>
+            <span class="record-label">录音识别</span>
+          </button>
+          <div class="bottom-controls">
+            <span class="engine-state" id="engineState">AI：未连接</span>
+            <label class="rate-control">
+              <span>语速</span>
+              <input id="rateSlider" type="range" min="0.7" max="1.3" step="0.05" value="1" />
+            </label>
+            <p class="hint" id="hintText">建议用 Chrome 或 Edge 打开，并允许麦克风权限。</p>
+          </div>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

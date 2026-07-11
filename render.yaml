@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: live-voice-translator
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: "npm start"
+    healthCheckPath: /api/health
+    envVars:
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini
+      - key: OPENAI_TRANSCRIBE_MODEL
+        value: gpt-4o-transcribe
+      - key: OPENAI_DIARIZE_MODEL
+        value: gpt-4o-transcribe-diarize
+      - key: OPENAI_API_KEY
+        sync: false
